@@ -1,0 +1,20 @@
+{
+  "name": "pegger",
+  "version": "1.0.0",
+  "description": "A TypeScript PEG Parser Framework",
+  "main": "index.ts",
+  "scripts": {
+    "test": "ts-node test.ts"
+  },
+  "author": "Friedrich Eichenroth",
+  "license": "MIT",
+  "dependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.16.0",
+    "@types/tape": "^4.13.4",
+    "tape": "^5.6.3"
+  }
+}
