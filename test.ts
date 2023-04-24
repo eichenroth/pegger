@@ -56,6 +56,21 @@ const character = (start: string, end: string): Grammar => {
   return { parse, match };
 };
 
+// any()
+
+const any = (): Grammar => {
+  const _parse = (input: string, startPos: number): ParseResult => {
+    if (input.length > startPos)
+      return { success: true, ast: input.charAt(startPos) };
+    return { success: false };
+  }
+
+  const parse = (input: string) => _parse(input, 0);
+  const match = (input: string) => _parse(input, 0).success;
+
+  return { parse, match };
+};
+
 test("string match test", (t) => {
   const grammar = string('match_me');
 
@@ -96,6 +111,26 @@ test("character parse test", (t) => {
   t.equal(grammar.parse('z').success, true);
   t.equal(grammar.parse('A').success, false);
   t.equal(grammar.parse('Z').success, false);
+
+  t.end();
+});
+
+test("any match test", (t) => {
+  const grammar = any();
+
+  t.equal(grammar.match('a'), true);
+  t.equal(grammar.match('0'), true);
+  t.equal(grammar.match(''), false);
+
+  t.end();
+});
+
+test("any parse test", (t) => {
+  const grammar = any();
+
+  t.equal(grammar.parse('a').success, true);
+  t.equal(grammar.parse('0').success, true);
+  t.equal(grammar.parse('').success, false);
 
   t.end();
 });
