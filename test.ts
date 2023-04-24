@@ -22,6 +22,8 @@ type Grammar = {
   match: (input: string) => boolean;
 };
 
+// string("match_me")
+
 const string = (str: string): Grammar => {
   const _parse = (input: string, startPos: number): ParseResult => {
     if (input.substring(startPos).startsWith(str))
@@ -33,6 +35,25 @@ const string = (str: string): Grammar => {
   const match = (input: string) => _parse(input, 0).success;
 
   return { parse, match };  
+};
+
+// character('a', 'z')
+
+const character = (start: string, end: string): Grammar => {
+  if (start.length !== 1) throw new Error('start must be a single character');
+  if (end.length !== 1) throw new Error('end must be a single character');
+
+  const _parse = (input: string, startPos: number): ParseResult => {
+    const char = input.charAt(startPos);
+    if (char >= start && char <= end)
+      return { success: true, ast: char };
+    return { success: false };
+  }
+
+  const parse = (input: string) => _parse(input, 0);
+  const match = (input: string) => _parse(input, 0).success;
+
+  return { parse, match };
 };
 
 test("string match test", (t) => {
@@ -53,6 +74,28 @@ test("string parse test", (t) => {
   t.equal(grammar.parse('match_me_please').success, true);
   
   t.equal(grammar.parse('dont_match_me').success, false);
+
+  t.end();
+});
+
+test("character match test", (t) => {
+  const grammar = character('a', 'z');
+
+  t.equal(grammar.match('a'), true);
+  t.equal(grammar.match('z'), true);
+  t.equal(grammar.match('A'), false);
+  t.equal(grammar.match('Z'), false);
+
+  t.end();
+});
+
+test("character parse test", (t) => {
+  const grammar = character('a', 'z');
+
+  t.equal(grammar.parse('a').success, true);
+  t.equal(grammar.parse('z').success, true);
+  t.equal(grammar.parse('A').success, false);
+  t.equal(grammar.parse('Z').success, false);
 
   t.end();
 });
