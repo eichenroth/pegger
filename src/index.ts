@@ -26,20 +26,20 @@ type GrammarAlias = GrammarRule;
 
 type Grammar<T extends string> = { [key in T]: GrammarRule | GrammarAlias }
 
-
 // string("match_me")
 
 export const string = (str: string): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
-    if (input.substring(startPos).startsWith(str))
+    if (input.substring(startPos).startsWith(str)) {
       return { success: true, ast: str };
+    }
     return { success: false };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
 
-  return { parse, match };  
+  return { parse, match };
 };
 
 // char('a', 'z')
@@ -49,11 +49,12 @@ export const char = (start: string, end: string): GrammarRule => {
   if (end.length !== 1) throw new Error('end must be a single character');
 
   const _parse = (input: string, startPos: number): ParseResult => {
-    const char = input.charAt(startPos);
-    if (char >= start && char <= end)
-      return { success: true, ast: char };
+    const character = input.charAt(startPos);
+    if (character >= start && character <= end) {
+      return { success: true, ast: character };
+    }
     return { success: false };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
@@ -65,10 +66,11 @@ export const char = (start: string, end: string): GrammarRule => {
 
 export const any = (): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
-    if (input.length > startPos)
+    if (input.length > startPos) {
       return { success: true, ast: input.charAt(startPos) };
+    }
     return { success: false };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
@@ -83,7 +85,7 @@ export const opt = (rule: GrammarRule): GrammarRule => {
     const result = rule.parse(input.substring(startPos));
     if (result.success) return result;
     return { success: true, ast: '' };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
@@ -104,13 +106,13 @@ export const zeroPlus = (rule: GrammarRule): GrammarRule => {
       pos += result.ast.length;
     }
     return { success: true, ast };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
 
   return { parse, match };
-}
+};
 
 // onePlus(rule)
 
@@ -120,13 +122,13 @@ export const onePlus = (rule: GrammarRule): GrammarRule => {
     if (result.success === false) return { success: false };
     if (result.ast.length === 0) return { success: false };
     return { success: true, ast: result.ast };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
 
   return { parse, match };
-}
+};
 
 // and(rule)
 
@@ -135,13 +137,13 @@ export const and = (rule: GrammarRule): GrammarRule => {
     const result = rule.parse(input.substring(startPos));
     if (result.success) return { success: true, ast: '' };
     return { success: false };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
 
   return { parse, match };
-}
+};
 
 // not(rule)
 
@@ -150,13 +152,13 @@ export const not = (rule: GrammarRule): GrammarRule => {
     const result = rule.parse(input.substring(startPos));
     if (result.success) return { success: false };
     return { success: true, ast: '' };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
 
   return { parse, match };
-}
+};
 
 // seq([rule1, rule2, ...])
 
@@ -164,14 +166,20 @@ export const seq = (rules: GrammarRule[]): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
     let ast = '';
     let pos = startPos;
-    for (const rule of rules) {
+
+    const success = rules.every((rule) => {
       const result = rule.parse(input.substring(pos));
-      if (result.success === false) return { success: false };
+
+      if (result.success === false) return false;
+
       ast += result.ast;
       pos += result.ast.length;
-    }
+      return true;
+    });
+
+    if (!success) return { success: false };
     return { success: true, ast };
-  }
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
@@ -183,18 +191,28 @@ export const seq = (rules: GrammarRule[]): GrammarRule => {
 
 export const choice = (rules: GrammarRule[]): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
-    for (const rule of rules) {
-      const result = rule.parse(input.substring(startPos));
-      if (result.success) return { success: true, ast: result.ast };
-    }
-    return { success: false };
-  }
+    let ast = '';
+    let pos = startPos;
+
+    const success = rules.some((rule) => {
+      const result = rule.parse(input.substring(pos));
+
+      if (result.success === false) return false;
+
+      ast += result.ast;
+      pos += result.ast.length;
+      return true;
+    });
+
+    if (!success) return { success: false };
+    return { success: true, ast };
+  };
 
   const parse = (input: string) => _parse(input, 0);
   const match = (input: string) => _parse(input, 0).success;
 
   return { parse, match };
-}
+};
 
 // alias('AliasName')
 
@@ -208,25 +226,24 @@ export const alias = (name: string): GrammarAlias => {
     if (result.success) return { success: true, ast: result.ast };
 
     return { success: false };
-  }
+  };
 
   const parse = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar);
   const match = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar).success;
 
-  return { parse, match };  
-
+  return { parse, match };
 };
 
 export const grammar = <T extends string>(ruleDict: Grammar<T>): Grammar<T> => {
-  const grammar: Record<string, GrammarRule | GrammarAlias> = {};
+  const g: Record<string, GrammarRule | GrammarAlias> = {};
 
-  Object.entries<GrammarRule | GrammarAlias>(ruleDict).map(([name, rule]) => {
-    grammar[name] = {
-      parse: (input: string) => rule.parse(input, grammar),
-      match: (input: string) => rule.match(input, grammar)
+  Object.entries<GrammarRule | GrammarAlias>(ruleDict).forEach(([name, rule]) => {
+    g[name] = {
+      parse: (input: string) => rule.parse(input, g),
+      match: (input: string) => rule.match(input, g),
     };
   });
 
   // TODO: fix this unchristian type casting
-  return grammar as Grammar<T>;
+  return g as Grammar<T>;
 };
