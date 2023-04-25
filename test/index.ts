@@ -1,3 +1,3 @@
-import './rules';
-import './non-context-free';
-import './simple-grammar';
+import './rules.ts';
+import './non-context-free.ts';
+import './simple-grammar.ts';

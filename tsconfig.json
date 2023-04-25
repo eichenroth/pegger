@@ -1,10 +1,13 @@
 {
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
-    "noUncheckedIndexedAccess": false
+    "noUncheckedIndexedAccess": false,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   }
 }

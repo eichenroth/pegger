@@ -2,10 +2,13 @@
   "root": true,
   "extends": [
     "eslint:recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    // "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "airbnb-base"
   ],
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "import"],
   "parser": "@typescript-eslint/parser",
   "rules": {
     "no-underscore-dangle": "off",
@@ -13,5 +16,13 @@
     "no-use-before-define": "off",
     "@typescript-eslint/no-unused-vars": "error",
     "@typescript-eslint/no-use-before-define": "error"
+  },
+  "parserOptions": {
+    "project": "./tsconfig.json"
   }
+  // "settings": {
+  //   "import/resolver": {
+  //     "node": { "extensions": [".ts"] }
+  //   }
+  // }
 }

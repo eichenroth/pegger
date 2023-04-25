@@ -1,7 +1,7 @@
-import test from "tape";
-import * as p from "../src";
+import test from 'tape';
+import * as p from '../src/index.ts';
 
-test("string match test", (t) => {
+test('string match test', (t) => {
   const grammar = p.string('match_me');
 
   t.equal(grammar.match('match_me'), true);
@@ -12,7 +12,7 @@ test("string match test", (t) => {
   t.end();
 });
 
-test("char match test", (t) => {
+test('char match test', (t) => {
   const grammar = p.char('a', 'z');
 
   t.equal(grammar.match('a'), true);
@@ -23,7 +23,7 @@ test("char match test", (t) => {
   t.end();
 });
 
-test("any match test", (t) => {
+test('any match test', (t) => {
   const grammar = p.any();
 
   t.equal(grammar.match('a'), true);
@@ -33,7 +33,7 @@ test("any match test", (t) => {
   t.end();
 });
 
-test("opt match test", (t) => {
+test('opt match test', (t) => {
   const grammar = p.opt(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
@@ -43,7 +43,7 @@ test("opt match test", (t) => {
   t.end();
 });
 
-test("zeroPlus match test", (t) => {
+test('zeroPlus match test', (t) => {
   const grammar = p.zeroPlus(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
@@ -54,7 +54,7 @@ test("zeroPlus match test", (t) => {
   t.end();
 });
 
-test("onePlus match test", (t) => {
+test('onePlus match test', (t) => {
   const grammar = p.onePlus(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
@@ -65,7 +65,7 @@ test("onePlus match test", (t) => {
   t.end();
 });
 
-test("and match test", (t) => {
+test('and match test', (t) => {
   const grammar = p.and(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
@@ -75,7 +75,7 @@ test("and match test", (t) => {
   t.end();
 });
 
-test("not match test", (t) => {
+test('not match test', (t) => {
   const grammar = p.not(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), false);
@@ -85,7 +85,7 @@ test("not match test", (t) => {
   t.end();
 });
 
-test("seq match test", (t) => {
+test('seq match test', (t) => {
   const grammar = p.seq([p.string('match_me'), p.string('_please')]);
 
   t.equal(grammar.match('match_me_please'), true);
@@ -94,7 +94,7 @@ test("seq match test", (t) => {
   t.end();
 });
 
-test("choice match test", (t) => {
+test('choice match test', (t) => {
   const grammar = p.choice([p.string('match_me'), p.string('please_match_me')]);
 
   t.equal(grammar.match('match_me'), true);

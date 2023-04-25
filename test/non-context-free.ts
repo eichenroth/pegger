@@ -1,7 +1,7 @@
-import test from "tape";
-import * as p from '../src';
+import test from 'tape';
+import * as p from '../src/index.ts';
 
-// Classic non-context-free grammar: {a^n b^n c^n | n >= 1}
+// Classic non-context-free grammar: {a^n b^n c^n | n >= 1}
 // copied from https://en.wikipedia.org/wiki/Parsing_expression_grammar
 
 // S := &(A 'c') 'a'+ B !.
@@ -13,17 +13,17 @@ const grammar = p.grammar({
     p.and(p.seq([p.alias('A'), p.string('c')])),
     p.onePlus(p.string('a')),
     p.alias('B'),
-    p.not(p.any())
+    p.not(p.any()),
   ]),
   A: p.seq([
     p.string('a'),
     p.opt(p.alias('A')),
-    p.string('b')
+    p.string('b'),
   ]),
   B: p.seq([
     p.string('b'),
     p.opt(p.alias('B')),
-    p.string('c')
+    p.string('c'),
   ]),
 });
 
@@ -51,7 +51,7 @@ const grammar = p.grammar({
 //   ])
 // })
 
-test("non-context-free", (t) => {
+test('non-context-free', (t) => {
   t.equal(grammar.S.match(''), false);
 
   t.equal(grammar.S.match('abc'), true);
