@@ -42,9 +42,9 @@ export const string = (str: string): GrammarRule => {
   return { parse, match };  
 };
 
-// character('a', 'z')
+// char('a', 'z')
 
-export const character = (start: string, end: string): GrammarRule => {
+export const char = (start: string, end: string): GrammarRule => {
   if (start.length !== 1) throw new Error('start must be a single character');
   if (end.length !== 1) throw new Error('end must be a single character');
 
@@ -76,9 +76,9 @@ export const any = (): GrammarRule => {
   return { parse, match };
 };
 
-// optional(rule)
+// opt(rule)
 
-export const optional = (rule: GrammarRule): GrammarRule => {
+export const opt = (rule: GrammarRule): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
     const result = rule.parse(input.substring(startPos));
     if (result.success) return result;
@@ -91,9 +91,9 @@ export const optional = (rule: GrammarRule): GrammarRule => {
   return { parse, match };
 };
 
-// zeroOrMore(rule)
+// zeroPlus(rule)
 
-export const zeroOrMore = (rule: GrammarRule): GrammarRule => {
+export const zeroPlus = (rule: GrammarRule): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
     let ast = '';
     let pos = startPos;
@@ -112,11 +112,11 @@ export const zeroOrMore = (rule: GrammarRule): GrammarRule => {
   return { parse, match };
 }
 
-// oneOrMore(rule)
+// onePlus(rule)
 
-export const oneOrMore = (rule: GrammarRule): GrammarRule => {
+export const onePlus = (rule: GrammarRule): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
-    const result = zeroOrMore(rule).parse(input.substring(startPos));
+    const result = zeroPlus(rule).parse(input.substring(startPos));
     if (result.success === false) return { success: false };
     if (result.ast.length === 0) return { success: false };
     return { success: true, ast: result.ast };
@@ -128,9 +128,9 @@ export const oneOrMore = (rule: GrammarRule): GrammarRule => {
   return { parse, match };
 }
 
-// posLookahead(rule)
+// and(rule)
 
-export const posLookahead = (rule: GrammarRule): GrammarRule => {
+export const and = (rule: GrammarRule): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
     const result = rule.parse(input.substring(startPos));
     if (result.success) return { success: true, ast: '' };
@@ -143,9 +143,9 @@ export const posLookahead = (rule: GrammarRule): GrammarRule => {
   return { parse, match };
 }
 
-// negLookahead(rule)
+// not(rule)
 
-export const negLookahead = (rule: GrammarRule): GrammarRule => {
+export const not = (rule: GrammarRule): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
     const result = rule.parse(input.substring(startPos));
     if (result.success) return { success: false };
@@ -158,9 +158,9 @@ export const negLookahead = (rule: GrammarRule): GrammarRule => {
   return { parse, match };
 }
 
-// sequence([rule1, rule2, ...])
+// seq([rule1, rule2, ...])
 
-export const sequence = (rules: GrammarRule[]): GrammarRule => {
+export const seq = (rules: GrammarRule[]): GrammarRule => {
   const _parse = (input: string, startPos: number): ParseResult => {
     let ast = '';
     let pos = startPos;
@@ -218,9 +218,7 @@ export const alias = (name: string): GrammarAlias => {
 };
 
 export const grammar = <T extends string>(ruleDict: Grammar<T>): Grammar<T> => {
-  const grammar = {} as { [key in keyof Grammar<T>]: GrammarRule | GrammarAlias }
-
-  // const grammar: Grammar<T> = {} as Grammar<T>;
+  const grammar: Record<string, GrammarRule | GrammarAlias> = {};
 
   Object.entries<GrammarRule | GrammarAlias>(ruleDict).map(([name, rule]) => {
     grammar[name] = {
@@ -229,19 +227,6 @@ export const grammar = <T extends string>(ruleDict: Grammar<T>): Grammar<T> => {
     };
   });
 
-
+  // TODO: fix this unchristian type casting
+  return grammar as Grammar<T>;
 };
-
-
-// type TestRecord<T extends string> = Record<T, string>;
-
-// const test = {
-//   A: 'a',
-//   B: 'b'
-// };
-
-// const createTestRecord = <T extends string>(input: TestRecord<T>): TestRecord<T> => {
-//   return { ...input };
-// };
-
-// const test2 = createTestRecord({ x: 'x' });

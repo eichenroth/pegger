@@ -12,8 +12,8 @@ test("string match test", (t) => {
   t.end();
 });
 
-test("character match test", (t) => {
-  const grammar = p.character('a', 'z');
+test("char match test", (t) => {
+  const grammar = p.char('a', 'z');
 
   t.equal(grammar.match('a'), true);
   t.equal(grammar.match('z'), true);
@@ -33,8 +33,8 @@ test("any match test", (t) => {
   t.end();
 });
 
-test("optional match test", (t) => {
-  const grammar = p.optional(p.string('match_me'));
+test("opt match test", (t) => {
+  const grammar = p.opt(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
   t.equal(grammar.match('match_me_please'), true);
@@ -43,8 +43,8 @@ test("optional match test", (t) => {
   t.end();
 });
 
-test("zeroOrMore match test", (t) => {
-  const grammar = p.zeroOrMore(p.string('match_me'));
+test("zeroPlus match test", (t) => {
+  const grammar = p.zeroPlus(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
   t.equal(grammar.match('match_me_please'), true);
@@ -54,8 +54,8 @@ test("zeroOrMore match test", (t) => {
   t.end();
 });
 
-test("oneOrMore match test", (t) => {
-  const grammar = p.oneOrMore(p.string('match_me'));
+test("onePlus match test", (t) => {
+  const grammar = p.onePlus(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
   t.equal(grammar.match('match_me_please'), true);
@@ -65,8 +65,8 @@ test("oneOrMore match test", (t) => {
   t.end();
 });
 
-test("posLookahead match test", (t) => {
-  const grammar = p.posLookahead(p.string('match_me'));
+test("and match test", (t) => {
+  const grammar = p.and(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), true);
   t.equal(grammar.match('match_me_please'), true);
@@ -75,8 +75,8 @@ test("posLookahead match test", (t) => {
   t.end();
 });
 
-test("negLookahead match test", (t) => {
-  const grammar = p.negLookahead(p.string('match_me'));
+test("not match test", (t) => {
+  const grammar = p.not(p.string('match_me'));
 
   t.equal(grammar.match('match_me'), false);
   t.equal(grammar.match('match_me_please'), false);
@@ -85,8 +85,8 @@ test("negLookahead match test", (t) => {
   t.end();
 });
 
-test("sequence match test", (t) => {
-  const grammar = p.sequence([p.string('match_me'), p.string('_please')]);
+test("seq match test", (t) => {
+  const grammar = p.seq([p.string('match_me'), p.string('_please')]);
 
   t.equal(grammar.match('match_me_please'), true);
   t.equal(grammar.match('match_me'), false);
