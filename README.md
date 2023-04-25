@@ -25,8 +25,8 @@ These strings are matched by a grammar with the following definition.
 | Optional | `p.optional(rule)` | `<rule>?` |
 | Zero-or-more | `p.zeroOrMore(rule)` | `<rule>*` |
 | One-or-more | `p.oneOrMore(rule)` | `<rule>+` |
-| Pos. Lookahead (And) | `p.posLookahead(rule)`, `p.and(rule)` | `&<rule>` |
-| Neg. Lookahead (Not) | `p.negLookahead(rule)`, `p.not(rule)` | `!<rule>` |
+| Pos. Lookahead | `p.posLookahead(rule)` | `&<rule>` |
+| Neg. Lookahead | `p.negLookahead(rule)` | `!<rule>` |
 | Sequence | `p.sequence([first, second])` | `<first> <second>` |
 | Choice | `p.choice([first, second])` | `<first> \| <second>` |
 

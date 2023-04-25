@@ -1,5 +1,5 @@
 import test from "tape";
-import * as p from ".";
+import * as p from "../src";
 
 test("string match test", (t) => {
   const grammar = p.string('match_me');
@@ -61,6 +61,26 @@ test("oneOrMore match test", (t) => {
   t.equal(grammar.match('match_me_please'), true);
   t.equal(grammar.match('match_mematch_me'), true);
   t.equal(grammar.match('dont_match_me'), false);
+
+  t.end();
+});
+
+test("posLookahead match test", (t) => {
+  const grammar = p.posLookahead(p.string('match_me'));
+
+  t.equal(grammar.match('match_me'), true);
+  t.equal(grammar.match('match_me_please'), true);
+  t.equal(grammar.match('dont_match_me'), false);
+
+  t.end();
+});
+
+test("negLookahead match test", (t) => {
+  const grammar = p.negLookahead(p.string('match_me'));
+
+  t.equal(grammar.match('match_me'), false);
+  t.equal(grammar.match('match_me_please'), false);
+  t.equal(grammar.match('dont_match_me'), true);
 
   t.end();
 });
