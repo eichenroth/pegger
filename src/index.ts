@@ -2,9 +2,6 @@ type AST = string
 
 type SuccessfulParseResult = {
   success: true;
-  // having substrings here is not ideal,
-  // because it means that the parse would probably run in O(n^2) time
-  // to prevent that we should only create an AST / tree with strings after a successful parse
   ast: AST;
 };
 
@@ -22,8 +19,10 @@ type ParseResult = SuccessfulParseResult | FailedParseResult;
 
 type InternalSuccessfulParseResult = {
   success: true;
-  startPos: number;
-  endPos: number;
+  st: {
+    startPos: number;
+    endPos: number;
+  }
 };
 
 type InternalFailedParseResult = {
@@ -42,7 +41,7 @@ const toParse = (parse: InternalParseFunc): ParseFunc => (input) => {
   if (!result.success) {
     return { success: false };
   }
-  return { success: true, ast: input.substring(result.startPos, result.endPos) };
+  return { success: true, ast: input.substring(result.st.startPos, result.st.endPos) };
 };
 
 const toMatch = (parse: InternalParseFunc): MatchFunc => (input) => {
@@ -70,7 +69,7 @@ type Rule = {
 export const string = (str: string): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     if (input.substring(startPos, startPos + str.length) === str) {
-      return { success: true, startPos, endPos: startPos + str.length };
+      return { success: true, st: { startPos, endPos: startPos + str.length } };
     }
     return { success: false };
   };
@@ -87,7 +86,7 @@ export const char = (start: string, end: string): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     const character = input.charAt(startPos);
     if (character >= start && character <= end) {
-      return { success: true, startPos, endPos: startPos + 1 };
+      return { success: true, st: { startPos, endPos: startPos + 1 } };
     }
     return { success: false };
   };
@@ -100,7 +99,7 @@ export const char = (start: string, end: string): Rule => {
 export const any = (): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     if (input.length > startPos) {
-      return { success: true, startPos, endPos: startPos + 1 };
+      return { success: true, st: { startPos, endPos: startPos + 1 } };
     }
     return { success: false };
   };
@@ -113,8 +112,8 @@ export const any = (): Rule => {
 export const opt = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     const result = rule._parse(input, startPos);
-    if (result.success) { return { success: true, startPos, endPos: result.endPos }; }
-    return { success: true, startPos, endPos: startPos };
+    if (result.success) { return { success: true, st: { startPos, endPos: result.st.endPos } }; }
+    return { success: true, st: { startPos, endPos: startPos } };
   };
 
   return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
@@ -127,10 +126,10 @@ export const zeroPlus = (rule: Rule): Rule => {
     let pos = startPos;
     while (true) {
       const result = rule._parse(input, pos);
-      if (!result.success || startPos === result.endPos) break;
-      pos = result.endPos;
+      if (!result.success || startPos === result.st.endPos) break;
+      pos = result.st.endPos;
     }
-    return { success: true, startPos, endPos: pos };
+    return { success: true, st: { startPos, endPos: pos } };
   };
 
   return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
@@ -145,11 +144,11 @@ export const onePlus = (rule: Rule): Rule => {
     let success = false;
     while (true) {
       const result = rule._parse(input, pos);
-      if (!result.success || startPos === result.endPos) break;
-      pos = result.endPos;
+      if (!result.success || startPos === result.st.endPos) break;
+      pos = result.st.endPos;
       success = true;
     }
-    if (success) return { success: true, startPos, endPos: pos };
+    if (success) return { success: true, st: { startPos, endPos: pos } };
     return { success: false };
   };
 
@@ -161,7 +160,7 @@ export const onePlus = (rule: Rule): Rule => {
 export const and = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     const result = rule._parse(input, startPos);
-    if (result.success) return { success: true, startPos, endPos: startPos };
+    if (result.success) return { success: true, st: { startPos, endPos: startPos } };
     return { success: false };
   };
 
@@ -174,7 +173,7 @@ export const not = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     const result = rule._parse(input, startPos);
     if (result.success) return { success: false };
-    return { success: true, startPos, endPos: startPos };
+    return { success: true, st: { startPos, endPos: startPos } };
   };
 
   return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
@@ -189,11 +188,11 @@ export const seq = (rules: Rule[]): Rule => {
     const success = rules.every((rule) => {
       const result = rule._parse(input, pos);
       if (!result.success) return false;
-      pos = result.endPos;
+      pos = result.st.endPos;
       return true;
     });
 
-    if (success) return { success: true, startPos, endPos: pos };
+    if (success) return { success: true, st: { startPos, endPos: pos } };
     return { success: false };
   };
 
@@ -209,11 +208,11 @@ export const choice = (rules: Rule[]): Rule => {
     const success = rules.some((rule) => {
       const result = rule._parse(input, pos);
       if (result.success === false) return false;
-      pos = result.endPos;
+      pos = result.st.endPos;
       return true;
     });
 
-    if (success) { return { success: true, startPos, endPos: pos }; }
+    if (success) { return { success: true, st: { startPos, endPos: pos } }; }
     return { success: false };
   };
 
