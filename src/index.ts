@@ -61,9 +61,9 @@ type Rule = {
 //   match: (input: string, grammar?: Grammar<string>) => boolean;
 // };
 
-type GrammarAlias = GrammarRule;
+// type GrammarAlias = GrammarRule;
 
-type Grammar<T extends string> = { [key in T]: GrammarRule | GrammarAlias }
+// type Grammar<T extends string> = { [key in T]: GrammarRule | GrammarAlias }
 
 // STRING //
 
@@ -112,10 +112,8 @@ export const any = (): Rule => {
 
 export const opt = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
-    const result = rule.parse(input.substring(startPos));
-    if (result.success) {
-      return { success: true, startPos, endPos: startPos + result.ast.length };
-    }
+    const result = rule._parse(input, startPos);
+    if (result.success) { return { success: true, startPos, endPos: result.endPos }; }
     return { success: true, startPos, endPos: startPos };
   };
 
@@ -128,9 +126,9 @@ export const zeroPlus = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
     let pos = startPos;
     while (true) {
-      const result = rule.parse(input.substring(pos));
-      if (!result.success || result.ast.length === 0) break;
-      pos += result.ast.length;
+      const result = rule._parse(input, pos);
+      if (!result.success || startPos === result.endPos) break;
+      pos = result.endPos;
     }
     return { success: true, startPos, endPos: pos };
   };
@@ -146,9 +144,9 @@ export const onePlus = (rule: Rule): Rule => {
     let pos = startPos;
     let success = false;
     while (true) {
-      const result = rule.parse(input.substring(pos));
-      if (!result.success || result.ast.length === 0) break;
-      pos += result.ast.length;
+      const result = rule._parse(input, pos);
+      if (!result.success || startPos === result.endPos) break;
+      pos = result.endPos;
       success = true;
     }
     if (success) return { success: true, startPos, endPos: pos };
@@ -162,7 +160,7 @@ export const onePlus = (rule: Rule): Rule => {
 
 export const and = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
-    const result = rule.parse(input.substring(startPos));
+    const result = rule._parse(input, startPos);
     if (result.success) return { success: true, startPos, endPos: startPos };
     return { success: false };
   };
@@ -174,7 +172,7 @@ export const and = (rule: Rule): Rule => {
 
 export const not = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
-    const result = rule.parse(input.substring(startPos));
+    const result = rule._parse(input, startPos);
     if (result.success) return { success: false };
     return { success: true, startPos, endPos: startPos };
   };
@@ -189,9 +187,9 @@ export const seq = (rules: Rule[]): Rule => {
     let pos = startPos;
 
     const success = rules.every((rule) => {
-      const result = rule.parse(input.substring(pos));
-      if (result.success === false) return false;
-      pos += result.ast.length;
+      const result = rule._parse(input, pos);
+      if (!result.success) return false;
+      pos = result.endPos;
       return true;
     });
 
@@ -209,17 +207,13 @@ export const choice = (rules: Rule[]): Rule => {
     let pos = startPos;
 
     const success = rules.some((rule) => {
-      const result = rule.parse(input.substring(pos));
+      const result = rule._parse(input, pos);
       if (result.success === false) return false;
-      pos += result.ast.length;
+      pos = result.endPos;
       return true;
     });
 
-    if (success) {
-      return {
-        success: true, startPos, endPos: pos,
-      };
-    }
+    if (success) { return { success: true, startPos, endPos: pos }; }
     return { success: false };
   };
 
@@ -228,34 +222,34 @@ export const choice = (rules: Rule[]): Rule => {
 
 // alias('AliasName')
 
-export const alias = (name: string): GrammarAlias => {
-  const _parse = (input: string, startPos: number, grammar?: Grammar<string>): ParseResult => {
-    if (!grammar) return { success: false };
-    const rule = grammar[name];
-    if (!rule) return { success: false };
+// export const alias = (name: string): GrammarAlias => {
+//   const _parse = (input: string, startPos: number, grammar?: Grammar<string>): ParseResult => {
+//     if (!grammar) return { success: false };
+//     const rule = grammar[name];
+//     if (!rule) return { success: false };
 
-    const result = rule.parse(input.substring(startPos));
-    if (result.success) return { success: true, ast: result.ast };
+//     const result = rule.parse(input.substring(startPos));
+//     if (result.success) return { success: true, ast: result.ast };
 
-    return { success: false };
-  };
+//     return { success: false };
+//   };
 
-  const parse = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar);
-  const match = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar).success;
+//   const parse = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar);
+//   const match = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar).success;
 
-  return { parse, match };
-};
+//   return { parse, match };
+// };
 
-export const grammar = <T extends string>(ruleDict: Grammar<T>): Grammar<T> => {
-  const g: Record<string, GrammarRule | GrammarAlias> = {};
+// export const grammar = <T extends string>(ruleDict: Grammar<T>): Grammar<T> => {
+//   const g: Record<string, GrammarRule | GrammarAlias> = {};
 
-  Object.entries<GrammarRule | GrammarAlias>(ruleDict).forEach(([name, rule]) => {
-    g[name] = {
-      parse: (input: string) => rule.parse(input, g),
-      match: (input: string) => rule.match(input, g),
-    };
-  });
+//   Object.entries<GrammarRule | GrammarAlias>(ruleDict).forEach(([name, rule]) => {
+//     g[name] = {
+//       parse: (input: string) => rule.parse(input, g),
+//       match: (input: string) => rule.match(input, g),
+//     };
+//   });
 
-  // TODO: fix this unchristian type casting
-  return g as Grammar<T>;
-};
+//   // TODO: fix this unchristian type casting
+//   return g as Grammar<T>;
+// };
