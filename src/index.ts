@@ -1,8 +1,26 @@
+import { AsyncLocalStorage } from 'async_hooks';
+
+// INTERNAL TYPES //
+
 type ST = {
   startPos: number;
   endPos: number;
   children: ST[];
 };
+
+type InternalSuccessfulParseResult = {
+  success: true;
+  st: ST
+};
+
+type InternalFailedParseResult = {
+  success: false;
+};
+
+type InternalParseResult = InternalSuccessfulParseResult | InternalFailedParseResult;
+type InternalParseFunc = (input: string, startPos: number) => InternalParseResult;
+
+// EXTERNAL TYPES //
 
 type AST = {
   startPos: number;
@@ -20,28 +38,10 @@ type FailedParseResult = {
 };
 
 type ParseResult = SuccessfulParseResult | FailedParseResult;
-
-// planned methods:
-// - parse: parses as much of the input as possible and returns a ParseResult
-// - match: returns true if the input matches the grammar, false otherwise
-// - parseAll: parses the entire input and returns a ParseResult
-// - matchAll: returns true if the entire input matches the grammar, false otherwise
-
-type InternalSuccessfulParseResult = {
-  success: true;
-  st: ST
-};
-
-type InternalFailedParseResult = {
-  success: false;
-};
-
-type InternalParseResult = InternalSuccessfulParseResult | InternalFailedParseResult;
-
-type InternalParseFunc = (input: string, startPos: number) => InternalParseResult;
-
 type ParseFunc = (input: string) => ParseResult;
 type MatchFunc = (input: string) => boolean;
+
+// WRAPPERS //
 
 const toParse = (_parse: InternalParseFunc): ParseFunc => (input) => {
   const result = _parse(input, 0);
@@ -83,6 +83,8 @@ const toMatchAll = (_parse: InternalParseFunc): MatchFunc => {
   };
 };
 
+// RULES //
+
 type Rule = {
   _parse: InternalParseFunc;
   parse: ParseFunc;
@@ -91,16 +93,7 @@ type Rule = {
   matchAll: MatchFunc;
 };
 
-// type GrammarRule = {
-//   parse: (input: string, grammar?: Grammar<string>) => ParseResult;
-//   match: (input: string, grammar?: Grammar<string>) => boolean;
-// };
-
-// type GrammarAlias = GrammarRule;
-
-// type Grammar<T extends string> = { [key in T]: GrammarRule | GrammarAlias }
-
-// STRING //
+// RULE: STRING //
 
 export const string = (str: string): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -119,7 +112,7 @@ export const string = (str: string): Rule => {
   };
 };
 
-// CHARACTER CLASS //
+// RULE: CHARACTER CLASS //
 
 export const char = (start: string, end: string): Rule => {
   if (start.length !== 1) throw new Error('start must be a single character');
@@ -142,7 +135,7 @@ export const char = (start: string, end: string): Rule => {
   };
 };
 
-// ANY //
+// RULE: ANY //
 
 export const any = (): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -161,7 +154,7 @@ export const any = (): Rule => {
   };
 };
 
-// OPTIONAL //
+// RULE: OPTIONAL //
 
 export const opt = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -181,7 +174,7 @@ export const opt = (rule: Rule): Rule => {
   };
 };
 
-// ZERO-OR-MORE //
+// RULE: ZERO-OR-MORE //
 
 export const zeroPlus = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -210,7 +203,7 @@ export const zeroPlus = (rule: Rule): Rule => {
   };
 };
 
-// ONE-OR-MORE //
+// RULE: ONE-OR-MORE //
 
 export const onePlus = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -231,7 +224,7 @@ export const onePlus = (rule: Rule): Rule => {
   };
 };
 
-// AND / POSITIVE LOOKAHEAD //
+// RULE: AND / POSITIVE LOOKAHEAD //
 
 export const and = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -251,7 +244,7 @@ export const and = (rule: Rule): Rule => {
   };
 };
 
-// NOT / NEGATIVE LOOKAHEAD //
+// RULE: NOT / NEGATIVE LOOKAHEAD //
 
 export const not = (rule: Rule): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -269,7 +262,7 @@ export const not = (rule: Rule): Rule => {
   };
 };
 
-// SEQUENCE //
+// RULE: SEQUENCE //
 
 export const seq = (rules: Rule[]): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -303,7 +296,7 @@ export const seq = (rules: Rule[]): Rule => {
   };
 };
 
-// CHOICE //
+// RULE: CHOICE //
 
 export const choice = (rules: Rule[]): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
@@ -329,36 +322,61 @@ export const choice = (rules: Rule[]): Rule => {
   };
 };
 
-// alias('AliasName')
+// GRAMMAR //
 
-// export const alias = (name: string): GrammarAlias => {
-//   const _parse = (input: string, startPos: number, grammar?: Grammar<string>): ParseResult => {
-//     if (!grammar) return { success: false };
-//     const rule = grammar[name];
-//     if (!rule) return { success: false };
+type Grammar<T extends string> = {
+  rules: Record<T, Rule>;
+}
 
-//     const result = rule.parse(input.substring(startPos));
-//     if (result.success) return { success: true, ast: result.ast };
+type GrammarContext<T extends string> = {
+  grammar: Grammar<T>;
+};
 
-//     return { success: false };
-//   };
+const GrammarStorage = new AsyncLocalStorage<GrammarContext<string> | undefined>();
 
-//   const parse = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar);
-//   const match = (input: string, grammar?: Grammar<string>) => _parse(input, 0, grammar).success;
+export const alias = (name: string): Rule => {
+  const _parse: InternalParseFunc = (input, startPos) => {
+    const rule = GrammarStorage.getStore()?.grammar.rules[name];
+    const result = rule?._parse(input, startPos);
 
-//   return { parse, match };
-// };
+    if (result?.success) {
+      return { success: true, st: { startPos, endPos: result.st.endPos, children: [result.st] } };
+    }
+    return { success: false };
+  };
 
-// export const grammar = <T extends string>(ruleDict: Grammar<T>): Grammar<T> => {
-//   const g: Record<string, GrammarRule | GrammarAlias> = {};
+  // TODO: this is not too clean, since aliases only make sense inside grammars
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
+};
 
-//   Object.entries<GrammarRule | GrammarAlias>(ruleDict).forEach(([name, rule]) => {
-//     g[name] = {
-//       parse: (input: string) => rule.parse(input, g),
-//       match: (input: string) => rule.match(input, g),
-//     };
-//   });
+export const grammar = <T extends string>(ruleDict: Record<T, Rule>): Grammar<T> => {
+  const rules: Record<T, Rule> = {} as Record<T, Rule>;
+  const newGrammar = { rules };
 
-//   // TODO: fix this unchristian type casting
-//   return g as Grammar<T>;
-// };
+  Object.entries<Rule>(ruleDict).forEach(([name, rule]) => {
+    const typedName = name as T;
+
+    const _parse: InternalParseFunc = (input, startPos) => GrammarStorage.run(
+      { grammar: newGrammar },
+      rule._parse,
+      input,
+      startPos,
+    );
+
+    rules[typedName] = {
+      _parse,
+      parse: toParse(_parse),
+      parseAll: toParseAll(_parse),
+      match: toMatch(_parse),
+      matchAll: toMatchAll(_parse),
+    };
+  });
+
+  return newGrammar;
+};

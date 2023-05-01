@@ -6,9 +6,9 @@ test('one rule grammar', (t) => {
     Rule: p.string('match_me'),
   });
 
-  t.equal(grammar.Rule.match('match_me'), true);
-  t.equal(grammar.Rule.match('match_me_please'), true);
-  t.equal(grammar.Rule.match('dont_match_me'), false);
+  t.equal(grammar.rules.Rule.match('match_me'), true);
+  t.equal(grammar.rules.Rule.match('match_me_please'), true);
+  t.equal(grammar.rules.Rule.match('dont_match_me'), false);
 
   t.end();
 });
@@ -19,9 +19,9 @@ test('one alias grammar', (t) => {
     AliasRule: p.alias('Rule'),
   });
 
-  t.equal(grammar.Rule.match('match_me'), true);
-  t.equal(grammar.Rule.match('match_me_please'), true);
-  t.equal(grammar.Rule.match('dont_match_me'), false);
+  t.equal(grammar.rules.Rule.match('match_me'), true);
+  t.equal(grammar.rules.Rule.match('match_me_please'), true);
+  t.equal(grammar.rules.Rule.match('dont_match_me'), false);
 
   t.end();
 });
