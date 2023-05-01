@@ -231,27 +231,15 @@ export const seq = (rules: Rule[]): Rule => {
 
 export const choice = (rules: Rule[]): Rule => {
   const _parse: InternalParseFunc = (input, startPos) => {
+    // eslint-disable-next-line no-restricted-syntax
     for (const rule of rules) {
       const result = rule._parse(input, startPos);
-      if (result.success) return result;
-    }
-
-    let successfulResult: InternalSuccessfulParseResult;
-    const pos = startPos;
-
-    const success = rules.some((rule) => {
-      const result = rule._parse(input, pos);
-      if (result.success === false) return false;
-
-      successfulResult = result;
-      return true;
-      // return result;
-      // pos = result.st.endPos;
-      // return true;
-    });
-
-    if (successfulResult) {
-      return { success: true, st: { startPos, endPos: pos, children: [successfulResult.st] } };
+      if (result.success) {
+        return {
+          success: true,
+          st: { startPos, endPos: result.st.endPos, children: [result.st] },
+        };
+      }
     }
     return { success: false };
   };
