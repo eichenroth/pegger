@@ -43,8 +43,8 @@ type InternalParseFunc = (input: string, startPos: number) => InternalParseResul
 type ParseFunc = (input: string) => ParseResult;
 type MatchFunc = (input: string) => boolean;
 
-const toParse = (parse: InternalParseFunc): ParseFunc => (input) => {
-  const result = parse(input, 0);
+const toParse = (_parse: InternalParseFunc): ParseFunc => (input) => {
+  const result = _parse(input, 0);
   if (result.success) {
     return {
       success: true,
@@ -58,15 +58,37 @@ const toParse = (parse: InternalParseFunc): ParseFunc => (input) => {
   return { success: false };
 };
 
-const toMatch = (parse: InternalParseFunc): MatchFunc => (input) => {
-  const result = parse(input, 0);
-  return result.success;
+const toParseAll = (_parse: InternalParseFunc): ParseFunc => {
+  const parse = toParse(_parse);
+
+  return (input) => {
+    const result = parse(input);
+    if (result.success && result.ast.endPos === input.length) return result;
+    return { success: false };
+  };
+};
+
+const toMatch = (_parse: InternalParseFunc): MatchFunc => {
+  const parse = toParse(_parse);
+
+  return (input) => parse(input).success;
+};
+
+const toMatchAll = (_parse: InternalParseFunc): MatchFunc => {
+  const parse = toParse(_parse);
+
+  return (input) => {
+    const result = parse(input);
+    return result.success && result.ast.endPos === input.length;
+  };
 };
 
 type Rule = {
   _parse: InternalParseFunc;
   parse: ParseFunc;
+  parseAll: ParseFunc;
   match: MatchFunc;
+  matchAll: MatchFunc;
 };
 
 // type GrammarRule = {
@@ -88,7 +110,13 @@ export const string = (str: string): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // CHARACTER CLASS //
@@ -105,7 +133,13 @@ export const char = (start: string, end: string): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // ANY //
@@ -118,7 +152,13 @@ export const any = (): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // OPTIONAL //
@@ -132,7 +172,13 @@ export const opt = (rule: Rule): Rule => {
     return { success: true, st: { startPos, endPos: startPos, children: [] } };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // ZERO-OR-MORE //
@@ -155,7 +201,13 @@ export const zeroPlus = (rule: Rule): Rule => {
     };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // ONE-OR-MORE //
@@ -170,7 +222,13 @@ export const onePlus = (rule: Rule): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // AND / POSITIVE LOOKAHEAD //
@@ -184,7 +242,13 @@ export const and = (rule: Rule): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // NOT / NEGATIVE LOOKAHEAD //
@@ -196,7 +260,13 @@ export const not = (rule: Rule): Rule => {
     return { success: true, st: { startPos, endPos: startPos, children: [] } };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // SEQUENCE //
@@ -224,7 +294,13 @@ export const seq = (rules: Rule[]): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // CHOICE //
@@ -244,7 +320,13 @@ export const choice = (rules: Rule[]): Rule => {
     return { success: false };
   };
 
-  return { _parse, parse: toParse(_parse), match: toMatch(_parse) };
+  return {
+    _parse,
+    parse: toParse(_parse),
+    parseAll: toParseAll(_parse),
+    match: toMatch(_parse),
+    matchAll: toMatchAll(_parse),
+  };
 };
 
 // alias('AliasName')
