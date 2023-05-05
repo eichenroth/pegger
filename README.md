@@ -14,7 +14,6 @@ These strings are matched by a grammar with the following definition.
 <B> := "b" <B> "c" / "bc"
 ```
 
-
 ## Rules
 
 | Rule | Definition | String Definition |
@@ -28,6 +27,12 @@ These strings are matched by a grammar with the following definition.
 | Pos. Lookahead | `p.and(rule)` | `&<rule>` |
 | Neg. Lookahead | `p.not(rule)` | `!<rule>` |
 | Sequence | `p.seq([first, second])` | `<first> <second>` |
-| Choice | `p.choice([first, second])` | `<first> \| <second>` |
+| Choice | `p.choice([first, second])` / `<first> \| <second>` |
 
 ## The Grammar
+
+## Goals
+
+- Implement org. PEG Form
+- Implement McKeeman Form
+- Implement Backus-Naur Form
