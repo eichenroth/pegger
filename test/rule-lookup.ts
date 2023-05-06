@@ -1,7 +1,7 @@
 import test from 'tape';
 import * as p from '../src/index.ts';
 
-test('one rule grammar', (t) => {
+test('grammar rule lookup', (t) => {
   const grammar = p.grammar({
     Rule: p.string('match_me'),
   });
@@ -13,7 +13,7 @@ test('one rule grammar', (t) => {
   t.end();
 });
 
-test('one alias grammar', (t) => {
+test('grammar alias lookup', (t) => {
   const grammar = p.grammar({
     Rule: p.string('match_me'),
     AliasRule: p.alias('Rule'),

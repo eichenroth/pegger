@@ -1,5 +1,5 @@
 import test from 'tape';
-import * as p from '../src/index.ts';
+import * as p from '../../src/index.ts';
 
 // https://www.crockford.com/mckeeman.html used as a reference (creator of JSON)
 

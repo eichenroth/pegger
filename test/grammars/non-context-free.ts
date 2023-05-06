@@ -1,5 +1,5 @@
 import test from 'tape';
-import * as p from '../src/index.ts';
+import * as p from '../../src/index.ts';
 
 // Classic non-context-free grammar: {a^n b^n c^n | n >= 1}
 // copied from https://en.wikipedia.org/wiki/Parsing_expression_grammar
