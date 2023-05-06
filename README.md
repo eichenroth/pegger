@@ -4,15 +4,7 @@
 
 ## Base Usage
 
-Assume you have the need to parse all strings matching {a<sup>n</sup>b<sup>n</sup>c<sup>n</sup> | n ∈ ℕ}.
 
-These strings are matched by a grammar with the following definition.
-
-```
-<Grammar> := !. / &(<A>!"b")"a"*<B>!.
-<A> := "a" <A> "b" / "ab"
-<B> := "b" <B> "c" / "bc"
-```
 
 ## Rules
 
@@ -36,3 +28,20 @@ These strings are matched by a grammar with the following definition.
 - Implement original PEG Form
 - Implement EBNF Form
 - Implement McKeeman Form
+
+## Non-Context-Free Languages
+
+Some non-context-sensitive languages can be parsed by PEG.
+Take the language
+
+$$
+\{a^n b^n c^n | n \in \mathbb{N}_1 \}
+$$
+
+All strings of this language can be matched by a grammar with the following definition:
+
+```
+S := &(A 'c') 'a'+ B !.
+A := 'a' A? 'b'
+B := 'b' B? 'c'
+```
