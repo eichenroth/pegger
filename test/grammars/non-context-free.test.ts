@@ -1,4 +1,5 @@
-import test from 'tape';
+/* eslint-env jest */
+
 import * as p from '../../src/index.ts';
 
 // Classic non-context-free grammar: {a^n b^n c^n | n >= 1}
@@ -27,17 +28,15 @@ const grammar = p.grammar({
   ]),
 });
 
-test('non-context-free', (t) => {
-  t.equal(grammar.rules.S.match(''), false);
+test('non-context-free', () => {
+  expect(grammar.rules.S.match('')).toBe(false);
 
-  t.equal(grammar.rules.S.match('abc'), true);
-  t.equal(grammar.rules.S.match('aaaabbbbcccc'), true);
+  expect(grammar.rules.S.matchAll('abc')).toBe(true);
+  expect(grammar.rules.S.matchAll('aaaabbbbcccc')).toBe(true);
 
-  t.equal(grammar.rules.S.match('ab'), false);
-  t.equal(grammar.rules.S.match('abab'), false);
-  t.equal(grammar.rules.S.match('abcd'), false);
-  t.equal(grammar.rules.S.match('aabbc'), false);
-  t.equal(grammar.rules.S.match('aabbccc'), false);
-
-  t.end();
+  expect(grammar.rules.S.match('ab')).toBe(false);
+  expect(grammar.rules.S.match('abab')).toBe(false);
+  expect(grammar.rules.S.match('abcd')).toBe(false);
+  expect(grammar.rules.S.match('aabbc')).toBe(false);
+  expect(grammar.rules.S.match('aabbccc')).toBe(false);
 });

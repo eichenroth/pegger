@@ -4,7 +4,7 @@
   "description": "A TypeScript PEG Parser Framework",
   "main": "index.ts",
   "scripts": {
-    "test": "ts-node test/index.ts",
+    "test": "jest",
     "lint:es": "eslint . --ext .ts --ignore-path .gitignore",
     "lint:ts": "tsc --noEmit",
     "lint": "npm run lint:es && npm run lint:ts"
@@ -16,13 +16,18 @@
     "typescript": "^5.0.4"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.1",
     "@types/node": "^18.16.0",
-    "@types/tape": "^4.13.4",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
     "eslint": "^8.39.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.27.5",
-    "tape": "^5.6.3"
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
   }
 }

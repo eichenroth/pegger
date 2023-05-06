@@ -1,4 +1,5 @@
-import test from 'tape';
+/* eslint-env jest */
+
 import * as p from '../../src/index.ts';
 
 // https://bford.info/pub/lang/peg.pdf used as a reference
@@ -94,7 +95,7 @@ const PEGGrammar = p.grammar({
   EndOfFile: p.not(p.any()),
 });
 
-test('Simple PEG grammar', (t) => {
+test('Simple PEG grammar', () => {
   const simpleArithmetic = `
     Value   := [0-9.]+ / '(' Expr ')'
     Product := Expr (('*' / '/') Expr)*
@@ -102,7 +103,5 @@ test('Simple PEG grammar', (t) => {
     Expr    := Product / Sum / Value
   `;
 
-  t.equal(PEGGrammar.rules.Grammar.matchAll(simpleArithmetic), true);
-
-  t.end();
+  expect(PEGGrammar.rules.Grammar.matchAll(simpleArithmetic)).toBe(true);
 });
