@@ -114,13 +114,27 @@ export const string = (str: string): Rule => {
 
 // RULE: CHARACTER CLASS //
 
-export const char = (start: string, end: string): Rule => {
-  if (start.length !== 1) throw new Error('start must be a single character');
-  if (end.length !== 1) throw new Error('end must be a single character');
+type Char = string | [string, string];
+
+export const char = (...characters: Char[]): Rule => {
+  characters.forEach((character) => {
+    if (typeof character === 'string' && character.length !== 1) {
+      throw new Error('Character must be of length 1.');
+    }
+  });
+  characters.forEach((character) => {
+    if (typeof character !== 'string' && (character[0].length !== 1 || character[1].length !== 1)) {
+      throw new Error('Character must be of length 1.');
+    }
+  });
 
   const _parse: InternalParseFunc = (input, startPos) => {
-    const character = input.charAt(startPos);
-    if (character >= start && character <= end) {
+    const inputCharacter = input.charAt(startPos);
+    const success = characters.some((character) => {
+      if (typeof character === 'string') return character === inputCharacter;
+      return inputCharacter >= character[0] && inputCharacter <= character[1];
+    });
+    if (success) {
       return { success: true, st: { startPos, endPos: startPos + 1, children: [] } };
     }
     return { success: false };

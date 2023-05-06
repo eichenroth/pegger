@@ -1,28 +1,29 @@
 import test from 'tape';
 import * as p from '../../src/index.ts';
 
-// https://www.crockford.com/mckeeman.html used as a reference (creator of JSON)
+// https://www.crockford.com/mckeeman.html used as a reference
+// (creator of JSON)
 
-// json := element
-// value := object / array / string / number / true / false / null
-// object := "{" ws "}" / "{" members "}"
-// members := member ("," member)*
-// member := ws string ws ":" element
-// array := "[" ws "]" / "[" elements "]"
+// json     := element
+// value    := object / array / string / number / true / false / null
+// object   := "{" ws "}" / "{" members "}"
+// members  := member ("," member)*
+// member   := ws string ws ":" element
+// array    := "[" ws "]" / "[" elements "]"
 // elements := element ("," element)*
-// element := ws value ws
-// string := "\"" char* "\""
-// char := !"\"" !"\\" . / escape
-// escape := "\\" ( "\"" / "\\" / "/" / "b" / "f" / "n" / "r" / "t" / "u" hex hex hex hex )
-// hex := [0-9] / [a-f] / [A-F]
-// number := int frac exp
-// int := "-"? ("0" / [1-9] [0-9]*)
-// frac := "." [0-9]+ / ""
-// exp := ("e" / "E") ("-" / "+")? [0-9]+ / ""
-// ws := (" " / "\n" / "\r" / "\t")*
-// true := "true"
-// false := "false"
-// null := "null"
+// element  := ws value ws
+// string   := "\"" char* "\""
+// char     := !"\"" !"\\" . / escape
+// escape   := "\\" ( "\"" / "\\" / "/" / "b" / "f" / "n" / "r" / "t" / "u" hex hex hex hex )
+// hex      := [0-9] / [a-f] / [A-F]
+// number   := int frac exp
+// int      := "-"? ("0" / [1-9] [0-9]*)
+// frac     := "." [0-9]+ / ""
+// exp      := ("e" / "E") ("-" / "+")? [0-9]+ / ""
+// ws       := (" " / "\n" / "\r" / "\t")*
+// true     := "true"
+// false    := "false"
+// null     := "null"
 
 const JsonGrammar = p.grammar({
   json: p.alias('element'),
@@ -82,24 +83,24 @@ const JsonGrammar = p.grammar({
       p.seq([p.string('u'), p.alias('hex'), p.alias('hex'), p.alias('hex'), p.alias('hex')]),
     ]),
   ]),
-  hex: p.choice([p.char('0', '9'), p.char('a', 'f'), p.char('A', 'F')]),
+  hex: p.choice([p.char(['0', '9']), p.char(['a', 'f']), p.char(['A', 'F'])]),
   number: p.seq([p.alias('int'), p.alias('frac'), p.alias('exp')]),
   int: p.seq([
     p.opt(p.string('-')),
     p.choice([
       p.string('0'),
-      p.seq([p.char('1', '9'), p.zeroPlus(p.char('0', '9'))]),
+      p.seq([p.char(['1', '9']), p.zeroPlus(p.char(['0', '9']))]),
     ]),
   ]),
   frac: p.choice([
-    p.seq([p.string('.'), p.onePlus(p.char('0', '9'))]),
+    p.seq([p.string('.'), p.onePlus(p.char(['0', '9']))]),
     p.string(''),
   ]),
   exp: p.choice([
     p.seq([
       p.choice([p.string('e'), p.string('E')]),
       p.opt(p.choice([p.string('-'), p.string('+')])),
-      p.onePlus(p.char('0', '9')),
+      p.onePlus(p.char(['0', '9'])),
     ]),
     p.string(''),
   ]),

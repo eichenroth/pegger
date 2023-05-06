@@ -13,12 +13,23 @@ test('string match test', (t) => {
 });
 
 test('char match test', (t) => {
-  const grammar = p.char('a', 'z');
+  const grammar = p.char(['a', 'z']);
 
   t.equal(grammar.match('a'), true);
+  t.equal(grammar.match('m'), true);
   t.equal(grammar.match('z'), true);
   t.equal(grammar.match('A'), false);
+  t.equal(grammar.match('M'), false);
   t.equal(grammar.match('Z'), false);
+
+  const grammar2 = p.char(['a', 'z'], 'M');
+
+  t.equal(grammar2.match('a'), true);
+  t.equal(grammar2.match('m'), true);
+  t.equal(grammar2.match('z'), true);
+  t.equal(grammar2.match('A'), false);
+  t.equal(grammar2.match('M'), true);
+  t.equal(grammar2.match('Z'), false);
 
   t.end();
 });

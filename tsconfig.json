@@ -6,8 +6,8 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
-    "noUncheckedIndexedAccess": false,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "noUncheckedIndexedAccess": true
   }
 }
